@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='turnkey-command',
+setup(name='turnkey-popen4',
     version='1.0',
     description='A popen4 implementation',
     author='Stefan Davis',
