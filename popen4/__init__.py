@@ -1,8 +1,7 @@
 # Copyright (c) 2007-2011 Liraz Siri <liraz@turnkeylinux.org>
-# 
-# This file is part of turnkey-pylib.
-# 
-# turnkey-pylib is open source software; you can redistribute it and/or
+#               2019 TurnKey GNU/Liunx <admin@turnkeylinux.org>
+#
+# turnkey-popen4 is open source software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation; either version 3 of the
 # License, or (at your option) any later version.
@@ -22,11 +21,12 @@ except (AttributeError, ValueError):
 
 SHELL = os.environ.get('SHELL', '/bin/sh')
 
+
 class CatchIOErrorWrapper:
     """wraps around a file handler and catches IOError exceptions"""
 
     def __init__(self, fh):
-        self.fh  = fh
+        self.fh = fh
 
     def __del__(self):
         try:
@@ -36,13 +36,13 @@ class CatchIOErrorWrapper:
 
     def __getattr__(self, attr):
         return getattr(self.fh, attr)
-        
+
     def read(self, size=-1):
         try:
             return self.fh.read(size)
         except IOError:
             return ''
-            
+
     def readline(self, size=-1):
         try:
             return self.fh.readline(size)
@@ -58,18 +58,21 @@ class CatchIOErrorWrapper:
     def xreadlines(self):
         return self.fh.xreadlines()
 
+
 class Error(Exception):
     pass
 
+
 class Popen4:
-    """An implementation of popen2.Popen4 in which the output from stdut and stderr is combiend.
-    
+    """An implementation of popen2.Popen4 in which the output from stdut and
+    stderr is combined.
+
     Features:
 
     - Supports pty allocation (this may work around issues with Unix buffering)
     - Supports setting process group.
     - Supports privilege dropping.
-    
+
     """
 
     sts = -1
@@ -118,7 +121,7 @@ class Popen4:
             self._run_child(cmd)
 
         tty_echo_off(fd)
-        
+
         self.pid = pid
         self.fromchild = CatchIOErrorWrapper(os.fdopen(fd, "r+", bufsize))
         self.tochild = self.fromchild
@@ -136,7 +139,7 @@ class Popen4:
             os.dup2(p2cread, 0)
             os.dup2(c2pwrite, 1)
             os.dup2(c2pwrite, 2)
-            
+
             self._run_child(cmd)
         os.close(p2cread)
         self.tochild = os.fdopen(p2cwrite, 'w', bufsize)
@@ -155,7 +158,7 @@ class Popen4:
             os.execvp(cmd[0], cmd)
         finally:
             os._exit(1)
-    
+
     def __del__(self):
         if not self.pid:
             return
@@ -170,7 +173,7 @@ class Popen4:
             self.tochild.close()
         except:
             pass
-            
+
     def _drop_privileges(self, user):
         pwent = pwd.getpwnam(user)
         uid, gid, home = pwent[2], pwent[3], pwent[5]
@@ -183,7 +186,7 @@ class Popen4:
         for group in groups:
             if user in group[3]:
                 usergroups.append(group[2])
-        
+
         os.setgroups(usergroups)
         os.setgid(gid)
         os.setuid(uid)
@@ -205,4 +208,3 @@ class Popen4:
         if pid == self.pid:
             self.sts = sts
         return self.sts
-    
